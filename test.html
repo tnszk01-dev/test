@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://unpkg.com/dexie@3.0.2/dist/dexie.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/t/bs-3.3.6/jqc-1.12.0,dt-1.10.11/datatables.min.css"/> 
+    <script src="https://cdn.datatables.net/t/bs-3.3.6/jqc-1.12.0,dt-1.10.11/datatables.min.js"></script>
+</head>
+
+<style>
+    table tr th{
+      text-align: center;
+    }
+</style>
+
+<body>
+    <table id="foo-table" class="table table-bordered">
+        <thead>
+            <tr><th>No</th><th>都道府県</th><th>テキスト</th></tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+<script>
+
+    jQuery(function($){ 
+        // デフォルトの設定を変更
+        $.extend( $.fn.dataTable.defaults, { 
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/Japanese.json"
+            } 
+        }); 
+    
+        $("#foo-table").DataTable(); 
+    }); 
+</script>
+        
+<script>
+
+// DBを作成
+let db = new Dexie('SampleDB');
+
+// DB初期化
+db.delete();
+db = new Dexie('SampleDB');
+
+// ストアを定義
+db.version(1).stores({
+  posts: '++id,title,body,text'
+});
+
+//追加
+for(let i=0;i<5000;i++){
+ db.posts.add({
+  title: i,
+  body: i,
+  text: "⚫️ダミー⚫️ダミー⚫️ダミー "+i,
+ });
+}
+
+const dt = $('#foo-table').DataTable({
+   language: { url: 'https://cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/Japanese.json' },
+   columns: [{data:'No', title:'No'}, {data:'Pref', title:'都道府県'}, {data:'Text', title:'テキスト'}],
+   data: []
+});
+
+//出力
+db.posts.toArray().then(function (posts) {
+    const rows = posts.map(p => ({ No: p.title, Pref: p.body, Text: p.text }));
+    dt.rows.add(rows).draw(false);
+});
+
+//https://qiita.com/yamayamasan/items/a4297e724b86f4a00fd2
+
+</script>
+
+
+
+</body>
+</html>
